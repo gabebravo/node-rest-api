@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Router } = require('express');
 const router = Router();
+const { sortPlayers } = require('../utils/helpers')
 
 // Import models
 const TeamSchema = require('../models/team');
@@ -8,11 +9,8 @@ const Team = mongoose.model('team', TeamSchema);
 
 // get all teams
 const getTeams = (req, res) => {
-  Team.find({})
-    .then( teams => {
-      console.log('team', teams)
-      res.status(200).json(teams);
-    })
+  Team.getAllTeams()
+    .then( teams => res.status(200).json(sortPlayers(teams)) )
     .catch( err => res.status(400).json(err.message));
 }
 
@@ -31,11 +29,8 @@ const addTeam = async (req, res) => {
   const newTeam = new Team(req.body);
   await newTeam.save()
     .catch( err => res.status(400).json(err.message));
-  Team.find({})
-    .then( teams => {
-      console.log('teams', teams)
-      res.status(200).json(teams);
-    })
+  await Team.getAllTeams()
+    .then( teams => { res.status(200).json(teams) })
     .catch( err => res.status(400).json(err.message));
 }
 
@@ -43,11 +38,8 @@ const addTeam = async (req, res) => {
 const updateTeam = async (req, res) => {
   await Team.findByIdAndUpdate(req.params.id, {$set: req.body}, {new:true})
     .catch( err => res.status(400).json(err.message));
-  Team.find({})
-    .then( teams => {
-      console.log('teams', teams)
-      res.status(200).json(teams);
-    })
+  await Team.getAllTeams()
+    .then( teams => { res.status(200).json(teams) })
     .catch( err => res.status(400).json(err.message));
 }
 
@@ -55,10 +47,8 @@ const updateTeam = async (req, res) => {
 const deleteTeam = async (req, res) => {
   await Team.findByIdAndRemove(req.params.id)
     .catch( err => res.status(400).json(err.message));
-  Team.find({})
-    .then( teams => {
-      res.status(200).json(teams);
-    })
+  await Team.getAllTeams()
+    .then( teams => { res.status(200).json(teams) })
     .catch( err => res.status(400).json(err.message));
 }
 
